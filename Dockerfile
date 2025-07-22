@@ -1,23 +1,19 @@
 FROM python:3.9
 
-# Create a working directory
 WORKDIR /app
 
-# Copy dependencies first for better caching
 COPY requirements.txt /app/
 
-# Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copy rest of the application code
 COPY . /app
 
-# 🔐 Add a non-root user to satisfy Choreo Scan (CKV_DOCKER_3)
-RUN useradd -u 10014 -m appuser
-USER appuser
+# 🔐 Add a non-root user with a UID between 10000–20000
+RUN useradd -u 10001 -m appuser && chown -R 10001 /app
 
-# Expose the port
+# ✅ Use UID directly as required by Choreo
+USER 10001
+
 EXPOSE 3000
 
-# Start your app
 CMD flask run -h 0.0.0.0 -p 3000 & python3 main.py
